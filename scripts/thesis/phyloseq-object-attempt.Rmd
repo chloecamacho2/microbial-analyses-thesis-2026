@@ -1,0 +1,84 @@
+---
+title: "phyloseq-object-attempt"
+output: html_document
+---
+#loading libraries
+
+```{r}
+library("phyloseq")
+library("dplyr")
+library("tidyverse")
+library("ggplot2")
+library("tibble")
+```
+
+#importing data
+
+```{r}
+ASV_raw <- read_tsv('/Users/chloecamacho/Desktop/thesis/Bioinformatics/raw data/library_g3_trim_prok_asvs.df.tsv')
+TAXA <- read_tsv('/Users/chloecamacho/Desktop/thesis/Bioinformatics/raw data/library_g3_trim_prok_asvs.taxa.tsv')
+```
+#cleaning data up
+
+```{r}
+ASV <- ASV_raw %>% pivot_wider(
+    id_cols    = asv_id,        
+    names_from = sample_name, 
+    values_from = counts,      
+    values_fill = 0             
+  )
+
+#saving dfs as matrices
+ASV_MAT <- ASV %>%
+  column_to_rownames("asv_id") %>%   
+  mutate(across(everything(), as.numeric)) 
+ASV_matrix <- as.matrix(ASV_MAT)
+class(ASV_matrix)
+
+TAXA_MAT <- TAXA %>%
+  column_to_rownames("asv_id") %>%
+  as.matrix()
+class(TAXA_MAT)
+```
+
+#creating phyloseq object
+
+```{r}
+OTU <- otu_table(ASV_matrix, taxa_are_rows = TRUE)
+TAX = tax_table(TAXA_MAT)
+OTU
+TAX
+
+physeq <- phyloseq(OTU,TAX)
+physeq
+
+plot_bar(physeq, fill = "Family")+
+  theme(legend.position = "none")
+
+```
+#plotting
+```{r}
+plot_bar(physeq, fill = "Family")+
+  theme(legend.position = "none")
+
+#only top 5 families
+phyloseq_family <- tax_glom(physeq, taxrank = "Family")
+top_5_families <- names(sort(taxa_sums(phyloseq_family), decreasing = TRUE))[1:5]
+physeq_top_5 <- prune_taxa(top_5_families, phyloseq_family)
+
+plot_bar(physeq_top_5, fill = "Family") +
+  geom_bar(aes(color = Family, fill = Family), stat = "identity", position = "stack") +
+  theme_minimal()
+
+plot_bar(physeq_top_5, fill = "Family") +
+  theme_minimal()
+
+#top 5 phyla
+phyloseq_phyla <- tax_glom(physeq, taxrank = "Phylum")
+top_5_phyla <- names(sort(taxa_sums(phyloseq_phyla), decreasing = TRUE))[1:5]
+physeq_top_5_phyla <- prune_taxa(top_5_phyla, phyloseq_phyla)
+
+plot_bar(physeq_top_5_phyla, fill = "Phylum") +
+  theme_minimal()
+```
+
