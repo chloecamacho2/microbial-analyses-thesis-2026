@@ -5,10 +5,15 @@ output: html_document
 #loading libraries
 
 ```{r}
-library("phyloseq")
+library("readr")
+library("readxl")
+library("tidyr")
 library("dplyr")
-library("tidyverse")
+library("phyloseq")
+library("stringr")
 library("ggplot2")
+library("microbiome")
+library("vegan")
 library("tibble")
 ```
 
@@ -17,68 +22,241 @@ library("tibble")
 ```{r}
 ASV_raw <- read_tsv('/Users/chloecamacho/Desktop/thesis/Bioinformatics/raw data/library_g3_trim_prok_asvs.df.tsv')
 TAXA <- read_tsv('/Users/chloecamacho/Desktop/thesis/Bioinformatics/raw data/library_g3_trim_prok_asvs.taxa.tsv')
+meta <- read_excel("~/Desktop/thesis/Bioinformatics/meta?.xlsx")
+contam_ASV <- read.delim("/Users/chloecamacho/Desktop/thesis/Bioinformatics/raw data/potential_contam_asvs.camacho.taxa.tsv", header = TRUE, sep = "\t")
 ```
-#cleaning data up
+
+##Cleaning data up
+
+#getting rid of contaminant ASVs
+```{r}
+
+tax_cols <- c("Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species")  
+
+# unique contaminated lineages
+bad_lineage <- contam_ASV %>% 
+  select(all_of(tax_cols)) %>% 
+  distinct()
+
+# matching contaminated lineages in TAXA
+matching_taxa <- TAXA %>%
+  inner_join(bad_lineage, by = tax_cols, suffix = c("_main", "_bad")) %>%
+  pull(asv_id)  # get ASV IDs to remove
+
+```
+
+
+#Creating matrices without contaminant ASVs, reordering ASV and TAXA, 
 
 ```{r}
-ASV <- ASV_raw %>% pivot_wider(
-    id_cols    = asv_id,        
-    names_from = sample_name, 
-    values_from = counts,      
-    values_fill = 0             
-  )
-
+ASV <- ASV_raw %>% 
+  pivot_wider(
+    id_cols    = asv_id,          # the rows = ASVs
+    names_from = sample_name,     # the columns = samples
+    values_from = counts,
+    values_fill = 0
+  ) 
 #saving dfs as matrices
-ASV_MAT <- ASV %>%
-  column_to_rownames("asv_id") %>%   
-  mutate(across(everything(), as.numeric)) 
-ASV_matrix <- as.matrix(ASV_MAT)
-class(ASV_matrix)
+ASV_matrix <- ASV %>%
+  filter(!asv_id %in% matching_taxa) %>% #removing bad ASVs
+  column_to_rownames("asv_id") %>%   #making asv_id as the row name 
+  mutate(across(everything(), as.numeric)) %>% #converting to numeric
+  as.matrix()
 
 TAXA_MAT <- TAXA %>%
   column_to_rownames("asv_id") %>%
   as.matrix()
+
+#double checks
+any(rownames(ASV_matrix) %in% matching_taxa) #double check that the matrix has no bad ASVs
+class(ASV_matrix) #double check its a matrix
 class(TAXA_MAT)
+
+#cleaning up metadata
+meta <- meta %>% 
+  distinct(CamachoName, .keep_all = TRUE) %>% #removes duplicates
+  rename(SamplingDate = `Sampling Date`) %>%
+  mutate(CamachoName = str_replace(CamachoName, "PSV", "PSU")) #corrects PSV to PSU
+
+#fixing rows
+meta_df <- as.data.frame(meta) #saving as dataframe
+rownames(meta_df) <- meta_df$CamachoName #making CamachoName column be the rows instead
+meta_df$CamachoName <- NULL  # remove the ID column (now rownames)
+
+#Find common samples & asvs and align ORDER
+common_samples <- intersect(colnames(ASV_matrix), rownames(meta_df)) 
+common_asvs <- intersect(rownames(ASV_matrix), rownames(TAXA_MAT))
+length(common_asvs) 
+
+# Subset both to matching samples & asvs, SAME ORDER
+ASV_matrix <- ASV_matrix[, common_samples, drop = FALSE]
+meta_df    <- meta_df[common_samples, , drop = FALSE]
+
+ASV_matrix  <- ASV_matrix[common_asvs, , drop = FALSE]
+TAXA_MAT    <- TAXA_MAT[common_asvs, , drop = FALSE]
+
+# double checking everything is good 
+identical(colnames(ASV_matrix), rownames(meta_df))  # Must be TRUE
+identical(rownames(ASV_matrix), rownames(TAXA_MAT))  # TRUE
+
+#from this point on im using ASV_matrix, TAXA_MAT, meta_df
 ```
 
-#creating phyloseq object
+#Creating phyloseq object
 
 ```{r}
 OTU <- otu_table(ASV_matrix, taxa_are_rows = TRUE)
 TAX = tax_table(TAXA_MAT)
-OTU
-TAX
+META <- sample_data(meta_df)
 
-physeq <- phyloseq(OTU,TAX)
+physeq <- phyloseq(OTU,TAX, META)
 physeq
+```
 
-plot_bar(physeq, fill = "Family")+
-  theme(legend.position = "none")
+#saving phyloseq object
+
+```{r}
+# Save your physeq object as an RDS file (compressed, fast to reload)
+saveRDS(physeq, "/Users/chloecamacho/Desktop/thesis/Bioinformatics/physeq_filtered.rds")
+```
+
+#Plotting
+
+```{r}
+
+#################################### PCA PLOT ######################################################
+site_colors <- c("Brewer's Bay"= "turquoise", "Saba"="lightpink", "Perseverance"="navy", "Krum Bay"="darkorange", "Rupert's Rock"="brown")
+
+coral_colors <- c("Acropora palmata"="yellow", "Montastraea cavernosa"="darkorchid","Porites astreoides"="green")
+
+sample_data(physeq)$Site <-factor(sample_data(physeq)$Site, levels = c("Brewer's Bay", "Saba", "Perseverance", "Krum Bay", "Rupert's Rock"))
+
+physeq_sites <- subset_samples(physeq, Site %in% c("Brewer's Bay", "Saba", "Perseverance", "Krum Bay", "Rupert's Rock"))%>%
+  filter_taxa(function(x) sum(x) > 0, TRUE)  # removes 35 taxa
+
+# Transform the data for PCA
+physeq_sites.beta <- microbiome::transform(physeq_sites, 'clr') # centered log ratio transformation
+physeq_sites.beta_euc <- ordinate(physeq_sites.beta, "RDA", "euclidean") # Redundancy Analysis, Euclidean for distance matrix to calculate dissimilarity between samples
+
+# plot PCA
+beta_site <- plot_ordination(physeq_sites.beta, physeq_sites.beta_euc, 
+                                   type="samples", color="Site", shape = "Species") +
+  coord_fixed() +
+  geom_point(size = 4) +
+  labs(color = "Site", shape = "Species") +
+  theme_minimal() +
+  scale_color_manual(values = site_colors) 
+
+beta_site
+```
+
+testing for 
+```{r}
+# PERMANOVA: Does Site structure communities?
+clr_meta <- as(sample_data(physeq_sites.beta), "data.frame")
+clr_otu <- otu_table(physeq_sites.beta) %>% as.matrix()
+
+euc_diss <- vegdist(clr_otu, method = "euclidean")
+
+set.seed(10)
+adonis2(formula = euc_diss ~ Site, data = clr_meta, permutations = 999)
+```
+
+#one species per all sites
+
+```{r}
+physeq_past <-subset_samples(physeq,Species == "Porites astreoides")
+physeq_past.beta <- microbiome::transform(physeq_past, 'clr') # centered log ratio transformation
+physeq_past.beta_euc <- ordinate(physeq_past.beta, "RDA", "euclidean")
+
+# plot PCA
+beta_past <- plot_ordination(physeq_past.beta, physeq_past.beta_euc, 
+                                   type="samples", color="Site", shape = "Species") +
+  coord_fixed() +
+  geom_point(size = 4) +
+  labs(color = "Site", shape = "Species") +
+  theme_minimal() +
+  scale_color_manual(values = site_colors) 
+
+beta_past
+```
+#permanova to see if site has effect on past
+```{r}
+
+clr_meta <- as(sample_data(physeq_past.beta), "data.frame")
+clr_otu <- otu_table(physeq_past.beta) %>% as.matrix()
+
+#get dissimilarity matrix 
+euc_diss <- vegdist(clr_otu, method = "euclidean")
+
+# permanova test to evaluate if treatment significantly structures microbial community beta diversity
+set.seed(10)
+adonis2(formula = euc_diss ~ Site, data = clr_meta, permutations = 999) 
+
+# R2: 0.82774
+# F: 12.814
+# Pr(>F): 0.001
+```
+
+#stacked bar plot of blocks at each site on family level
+
+```{r}
+sample_variables(physeq)  # see available columns
+unique(sample_data(physeq)$Site)  # see exact values
+
+#filtering to only look at block samples 
+physeq_filtered <- physeq %>%
+  subset_samples(Site != "UVI Nursery") %>%           # No nursery
+  subset_samples(SampleType == "Block")               # Blocks only
+
+# Agglomerate to Family level
+physeq_fam <- tax_glom(physeq_filtered, taxrank = "Family")
+
+# 2. Transform to relative abundance
+physeq_fam_rel <- transform_sample_counts(physeq_fam, function(x) x/sum(x))
+
+# Plot (sites on X-axis, families stacked by relative abundance)
+plot_bar(physeq_fam_rel, fill = "Family") + 
+  labs(x = "Sample", y = "Relative Abundance", 
+       title = "Families On Blocks Across Sites") +
+ #scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0, 1)) +
+  facet_wrap(~ Site, scales = "free_x", nrow = 1) +  # One row of site panels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 7),
+        legend.position = "none",
+        strip.background = element_rect(fill = "lightgray"),
+        strip.text = element_text(size = 10, face = "bold"))
 
 ```
-#plotting
+
+#just PAST stacked bar plot
+
 ```{r}
-plot_bar(physeq, fill = "Family")+
-  theme(legend.position = "none")
 
-#only top 5 families
-phyloseq_family <- tax_glom(physeq, taxrank = "Family")
-top_5_families <- names(sort(taxa_sums(phyloseq_family), decreasing = TRUE))[1:5]
-physeq_top_5 <- prune_taxa(top_5_families, phyloseq_family)
+# 1. filter to just look at past in the wild 
+physeq_past <- physeq %>%
+  subset_samples(SampleType == "Coral") %>%
+  subset_samples(Species == "Porites astreoides") %>% 
+  subset_samples(Site != "UVI Nursery")
 
-plot_bar(physeq_top_5, fill = "Family") +
-  geom_bar(aes(color = Family, fill = Family), stat = "identity", position = "stack") +
-  theme_minimal()
+nsamples(physeq_past)
 
-plot_bar(physeq_top_5, fill = "Family") +
-  theme_minimal()
+# 2. Agglomerate to Family level  
+past_family <- tax_glom(physeq_past, taxrank = "Family") %>% 
+  
 
-#top 5 phyla
-phyloseq_phyla <- tax_glom(physeq, taxrank = "Phylum")
-top_5_phyla <- names(sort(taxa_sums(phyloseq_phyla), decreasing = TRUE))[1:5]
-physeq_top_5_phyla <- prune_taxa(top_5_phyla, phyloseq_phyla)
+# 3. Transform to relative abundance
+past_family_RA <- transform_sample_counts(past_family, function(x) x/sum(x))
 
-plot_bar(physeq_top_5_phyla, fill = "Phylum") +
-  theme_minimal()
+# 4. Plot ALL families for this species across sites
+plot_bar(past_family_RA, fill = "Family") + 
+  labs(x = "Sample", y = "Relative Abundance", 
+       title = "Families for Porites astreoides Across Sites") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0, 1)) +
+  facet_wrap(~ Site, scales = "free_x", nrow = 1) +  # ← Site panels, no x-axis labels
+  theme(axis.text.x = element_blank(),  # ← Hide sample names completely
+        axis.ticks.x = element_blank(),
+        legend.position = "right") +
+  guides(fill = guide_legend(ncol = 1))
+
 ```
 

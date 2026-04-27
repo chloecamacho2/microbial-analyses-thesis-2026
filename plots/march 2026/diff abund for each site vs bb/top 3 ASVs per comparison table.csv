@@ -1,0 +1,49 @@
+Comparison,Direction,asvtaxa,Estimate,Pr,Family
+Krum Bay vs BB (T1),Brewers Bay,Lentimonas (ASV_000769),8.049597630715489,3.2261469599949314e-6,Puniceicoccaceae
+Krum Bay vs BB (T1),Brewers Bay,Pseudohongiella (ASV_000693),6.240758230279104,0.0010907860625213113,Pseudohongiellaceae
+Krum Bay vs BB (T1),Brewers Bay,unclassified (ASV_000575),6.0087580489028225,0.0012742457447549001,unclassified
+Krum Bay vs BB (T1),Krum Bay,unclassified (ASV_000349),-6.061993363488727,0.0016327666202606923,unclassified
+Krum Bay vs BB (T1),Krum Bay,unclassified (ASV_000034),-6.083439013709631,0.005406372577299382,Cyclobacteriaceae
+Krum Bay vs BB (T1),Krum Bay,unclassified (ASV_000026),-6.4301523600226105,1.3520244989192642e-9,unclassified
+Krum Bay vs BB (T2),Brewers Bay,unclassified (ASV_000817),1.8320722010448036,0.06863000826700937,unclassified
+Krum Bay vs BB (T2),Brewers Bay,unclassified (ASV_000095),0.5760264681247507,0.2801677905558941,Rhodobacteraceae
+Krum Bay vs BB (T2),Brewers Bay,unclassified (ASV_000061),0.15287145689392526,0.7327080638693882,Rhodobacteraceae
+Krum Bay vs BB (T2),Krum Bay,Erythrobacter (ASV_000527),-3.2314676982571964,0.16990361561634149,Sphingomonadaceae
+Krum Bay vs BB (T2),Krum Bay,unclassified (ASV_000571),-5.441995691006833,0.0014478876539653976,unclassified
+Krum Bay vs BB (T2),Krum Bay,unclassified (ASV_000132),-7.350193340890686,1.0881312725152052e-4,unclassified
+Perseverance vs BB (T1),Brewers Bay,Porticoccus (ASV_002906),6.344203560618329,0.0018391542323304528,Porticoccaceae
+Perseverance vs BB (T1),Brewers Bay,Candidatus Actinomarina (ASV_000071),4.657047290037431,0.002211717308359064,Actinomarinaceae
+Perseverance vs BB (T1),Brewers Bay,unclassified (ASV_000443),4.5856259668244475,0.0014653735648669879,Nitrincolaceae
+Perseverance vs BB (T1),Perseverance,Vibrio (ASV_000013),-3.8585159146188057,0.002157571117497481,Vibrionaceae
+Perseverance vs BB (T1),Perseverance,SU2 symbiont group (ASV_000236),-5.469526076744623,0.016280592344475046,Microcystaceae
+Perseverance vs BB (T1),Perseverance,unclassified (ASV_000371),-6.412979571673937,9.013360039835977e-4,Saprospiraceae
+Perseverance vs BB (T2),Brewers Bay,Muricauda (ASV_000079),1.4157394649063428,0.004254640308016463,Flavobacteriaceae
+Perseverance vs BB (T2),Brewers Bay,Pseudooceanicola (ASV_000114),1.0385954736978111,0.021575518875527448,Rhodobacteraceae
+Perseverance vs BB (T2),Brewers Bay,unclassified (ASV_000216),0.6493487772077171,0.33045679944334494,Sandaracinaceae
+Perseverance vs BB (T2),Perseverance,Erythrobacter (ASV_000527),-1.2334799327997985,0.33466875725264533,Sphingomonadaceae
+Perseverance vs BB (T2),Perseverance,unclassified (ASV_000107),-1.8513666346471325,0.005343920971211532,Unknown Family
+Perseverance vs BB (T2),Perseverance,unclassified (ASV_000276),-2.170581711398463,0.03413533015379624,Rhodobacteraceae
+Rupert's Rock vs BB (T1),Brewers Bay,unclassified (ASV_002036),6.358162442538544,0.0010650110983994048,NS11-12 marine group
+Rupert's Rock vs BB (T1),Brewers Bay,Candidatus Actinomarina (ASV_000071),5.131154332735065,6.020460011675257e-4,Actinomarinaceae
+Rupert's Rock vs BB (T1),Brewers Bay,Rubritalea (ASV_000603),4.282779101669907,0.007487504684228412,Rubritaleaceae
+Rupert's Rock vs BB (T1),Rupert's Rock,Luminiphilus (ASV_000060),-6.615432343654103,0.002072093217620669,Halieaceae
+Rupert's Rock vs BB (T1),Rupert's Rock,SU2 symbiont group (ASV_000236),-6.795895941048132,8.605078883681684e-4,Microcystaceae
+Rupert's Rock vs BB (T1),Rupert's Rock,unclassified (ASV_000349),-7.008514645553852,4.206440980817623e-5,unclassified
+Rupert's Rock vs BB (T2),Brewers Bay,Portibacter (ASV_000134),1.7154669780613403,4.140610172342937e-4,Saprospiraceae
+Rupert's Rock vs BB (T2),Brewers Bay,Pseudooceanicola (ASV_000114),0.5390612394442287,0.35305259742872197,Rhodobacteraceae
+Rupert's Rock vs BB (T2),Brewers Bay,Erythrobacter (ASV_000527),0.4348895752493885,0.5123724638881122,Sphingomonadaceae
+Rupert's Rock vs BB (T2),Rupert's Rock,Maritimibacter (ASV_000058),-2.3983948235428763,0.03387109531405743,Rhodobacteraceae
+Rupert's Rock vs BB (T2),Rupert's Rock,unclassified (ASV_000132),-2.9328700721944947,0.012700382274345143,unclassified
+Rupert's Rock vs BB (T2),Rupert's Rock,unclassified (ASV_000224),-6.916721037355007,2.7283431753985683e-4,unclassified
+Saba vs BB (T1),Brewers Bay,Persicobacter (ASV_000457),7.390672029425571,2.3589702359430928e-4,Cyclobacteriaceae
+Saba vs BB (T1),Brewers Bay,unclassified (ASV_001083),6.673938144501651,8.331176667650329e-4,unclassified
+Saba vs BB (T1),Brewers Bay,Rubritalea (ASV_000482),5.946732982207269,0.005198716058976308,Rubritaleaceae
+Saba vs BB (T1),Saba,unclassified (ASV_000744),-5.917304129498566,6.118764545251487e-4,Sandaracinaceae
+Saba vs BB (T1),Saba,Lyngbya PCC-7419 (ASV_000232),-6.148384869342555,9.393283998792566e-4,Phormidiaceae
+Saba vs BB (T1),Saba,unclassified (ASV_000268),-6.4316979440868955,9.68227338124311e-4,Gimesiaceae
+Saba vs BB (T2),Brewers Bay,unclassified (ASV_001413),5.677055562629855,0.002738860118100654,Saprospiraceae
+Saba vs BB (T2),Brewers Bay,unclassified (ASV_001220),4.549033403319444,0.029750125209254245,Rhodobacteraceae
+Saba vs BB (T2),Brewers Bay,Sumerlaea (ASV_000529),3.2069257903664794,0.009186113503969046,Sumerlaeaceae
+Saba vs BB (T2),Saba,Erythrobacter (ASV_000047),-1.951251551756026,0.0015390726787388952,Sphingomonadaceae
+Saba vs BB (T2),Saba,Haloferula (ASV_000347),-2.3702050043070875,0.07082392084889579,Rubritaleaceae
+Saba vs BB (T2),Saba,Erythrobacter (ASV_000527),-2.689735735823903,0.029246472289060254,Sphingomonadaceae
