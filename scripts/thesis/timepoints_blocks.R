@@ -20,13 +20,13 @@ ps_ra <- transform_sample_counts(physeq, function(OTU) OTU/sum(OTU)) %>%
 
 # Create condition column based on your sites
 sample_data(ps_ra)$condition <- dplyr::case_when(
-  sample_data(ps_ra)$Site %in% c("Saba", "Perseverance") ~ "Unaffected",
-  sample_data(ps_ra)$Site %in% c("Krum Bay", "Rupert's Rock") ~ "Compromised", 
+  sample_data(ps_ra)$Site %in% c("Saba", "Perseverance") ~ "Unimpaired",
+  sample_data(ps_ra)$Site %in% c("Krum Bay", "Rupert's Rock") ~ "Impaired", 
   sample_data(ps_ra)$Site == "Brewer's Bay" ~ "Target")
 
 # Set factor levels for proper ordering
 sample_data(ps_ra)$condition <- factor(sample_data(ps_ra)$condition, 
-                                       levels = c("Unaffected", "Compromised", "Target"))
+                                       levels = c("Unimpaired", "Impaired", "Target"))
 
 # Optional: verify it worked
 table(sample_data(ps_ra)$Site, sample_data(ps_ra)$condition)
