@@ -5,6 +5,7 @@ library("cowplot")
 library("dplyr")
 library("phyloseq")
 library("ggplot2")
+library("tidyr")
 
 physeq <- readRDS("/Users/chloecamacho/Desktop/thesis/Bioinformatics/Microbial Analysis/coral_physeq.rds")
 
@@ -101,7 +102,7 @@ plot_grid(p3, p1, p2, legend,
           rel_widths = c(1, 1))
 
 # Save if needed
-ggsave("3coral_plots_with_legend.png", width = 12, height = 10, dpi = 300)
+ggsave("3coral_plots_without_legend.png", width = 12, height = 10, dpi = 300)
 
 #Save plot for higher res
 ggsave(
@@ -112,32 +113,6 @@ ggsave(
   dpi = 300,                       # Resolution
   units = "in"                     # Unit for width and height
 )
-
-
-
-# Extract legend with MAXIMUM text width
-p_legend <- p1 + 
-  theme_void() + 
-  guides(fill = guide_legend(
-    keywidth = 1.0,      # ← Wide legend keys  
-    keyheight = 1.0,
-    label.position = "right",
-    title.position = "top",
-    nrow = NULL,         # ← Auto vertical layout
-    label.hjust = 0      # ← Left-align text (no cutoff)
-  )) +
-  theme(legend.position = "right",
-        legend.text = element_text(size = 6, margin = margin(r = 5)),  # Tiny text + right margin
-        legend.title = element_text(size = 8),
-        legend.margin = margin(l = 10, r = 20),
-        legend.box.margin = margin(20, 40, 20, 20))
-
-legend <- get_legend(p_legend)
-
-# Visualize first
-grid.draw(legend)
-
-#NEED TO FIRGURE OUT HOW TO SAVE JUST LEGEND WITH GOOD DIMENSIONS
 
 
 
@@ -207,55 +182,114 @@ apal_avg <- compute_mean_by_condition(ps_ra_apal)
 families <- unique(c(mcav_avg$Family, past_avg$Family, apal_avg$Family))
 n_fam <- length(families)
 
-# Function to get n very distinct colors (if you don't have distinctColorPalette already)
-set.seed(123)
-palette <- grDevices::hcl.colors(n_fam, palette = "Viridis")
-
-# Map family → color
-family_palette <- setNames(palette, families)
-
+n <- 169
+palette <- distinctColorPalette(n)
 
 # --- Make the averaged bar plots ---
 
 # Montastraea cavernosa (M. cavernosa)
-p1_avg <- ggplot(mcav_avg, aes(x = condition, y = mean_abund, fill = Family)) +
+p1_avg <- ggplot(mcav_avg, aes(x = "1", y = mean_abund, fill = Family)) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_fill_manual(values = family_palette, na.value = "grey90") +
-  ggtitle("Montastraea cavernosa (mean by condition)") +
-  labs(y = "Mean Relative Abundance",
-       x = "Condition") +
-  theme(strip.text = element_text(face = "bold"),
-        plot.title = element_text(face = "italic"),
-        legend.position = "none",
-        axis.title.x = element_blank(),
-        axis.text.x = element_blank())
-
+  # Add faceting to create the category titles
+  facet_wrap(~ condition, strip.position = "top") + 
+  scale_fill_manual(values = palette, na.value = "grey90") +
+  ggtitle("Montastraea cavernosa") +
+  labs(y = "Mean Relative Abundance") +
+  theme(
+    # Ensure strip text is visible and styled
+    strip.placement = "outside",
+    strip.background = element_blank(),
+    strip.text = element_text(face = "bold"),
+    plot.title = element_text(face = "italic"),
+    legend.position = "none",
+    # Clean up axes since categories are now in strips
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
 # Porites astreoides
-p2_avg <- ggplot(past_avg, aes(x = condition, y = mean_abund, fill = Family)) +
+p2_avg <- ggplot(past_avg, aes(x = "1", y = mean_abund, fill = Family)) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_fill_manual(values = family_palette, na.value = "grey90") +
-  ggtitle("Porites astreoides (mean by condition)") +
-  labs(y = "Mean Relative Abundance",
-       x = "Condition") +
-  theme(strip.text = element_text(face = "bold"),
-        plot.title = element_text(face = "italic"),
-        legend.position = "none",
-        axis.title.x = element_blank(),
-        axis.text.x = element_blank())
+  # Add faceting to create the category titles
+  facet_wrap(~ condition, strip.position = "top") + 
+  scale_fill_manual(values = palette, na.value = "grey90") +
+  ggtitle("Porites astreoides") +
+  labs(y = "Mean Relative Abundance") +
+  theme(
+    # Ensure strip text is visible and styled
+    strip.placement = "outside",
+    strip.background = element_blank(),
+    strip.text = element_text(face = "bold"),
+    plot.title = element_text(face = "italic"),
+    legend.position = "none",
+    # Clean up axes since categories are now in strips
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
 
 # Acropora palmata
-p3_avg <- ggplot(apal_avg, aes(x = condition, y = mean_abund, fill = Family)) +
+p3_avg <- ggplot(apal_avg, aes(x = "1", y = mean_abund, fill = Family)) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_fill_manual(values = family_palette, na.value = "grey90") +
-  ggtitle("Acropora palmata (mean by condition)") +
-  labs(y = "Mean Relative Abundance",
-       x = "Condition") +
-  theme(strip.text = element_text(face = "bold"),
-        plot.title = element_text(face = "italic"),
-        legend.position = "none",
-        axis.title.x = element_blank(),
-        axis.text.x = element_blank())
+  # Add faceting to create the category titles
+  facet_wrap(~ condition, strip.position = "top") + 
+  scale_fill_manual(values = palette, na.value = "grey90") +
+  ggtitle("Acropora palmata") +
+  labs(y = "Mean Relative Abundance") +
+  theme(
+    # Ensure strip text is visible and styled
+    strip.placement = "outside",
+    strip.background = element_blank(),
+    strip.text = element_text(face = "bold"),
+    plot.title = element_text(face = "italic"),
+    legend.position = "none",
+    # Clean up axes since categories are now in strips
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+#getting legend 
+
+legend_plot <- ggplot(mcav_avg, aes(x = "1", y = mean_abund, fill = Family)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = palette, na.value = "grey90") +
+  theme(legend.position = "right") # Ensure it's not "none"
+
+# Extract the legend as a grob
+my_legend <- get_legend(legend_plot)
+# Combine the three plots first
+combined_plots <- plot_grid(p3_avg, p1_avg, p2_avg, 
+                            labels = c("A", "B", "C"), 
+                            ncol = 2, nrow = 2)
+
+# Add the legend to the layout
+# Adjust rel_widths to control how much space the legend occupies
+plot_grid(combined_plots, my_legend, 
+          rel_widths = c(.5, 0.8))
+
+plot_grid (my_legend)
 
 
 # --- Arrange all three plots ---
 plot_grid(p3_avg, p1_avg, p2_avg, labels = c("A", "B", "C"), ncol = 2, nrow = 2)
+
+
+# Customize legend to be multi-column with expanded spacing
+legend_plot <- ggplot(mcav_avg, aes(x = "1", y = mean_abund, fill = Family)) +
+  +     geom_bar(stat = "identity", position = "stack") +
+  +     scale_fill_manual(values = palette) +
+  +     # Use ncol to control width, forcing items to wrap and fill vertical space
+  +     guides(fill = guide_legend(ncol = 7, byrow = TRUE)) +
+  +     theme(
+    +         legend.position = "bottom", # Position at bottom to fill width/height
+    +         legend.spacing.x = unit(0.5, "cm"), # Horizontal gap
+    +         legend.spacing.y = unit(0.5, "cm"), # Vertical gap between wrapped rows
+    +         legend.key.height = unit(0.6, "cm")
+    +     )
+
+my_legend <- get_legend(legend_plot)
+ggdraw(my_legend)
+ 
+# Save if needed
+#ggsave("3coral_plots_without_legend.png", width = 12, height = 10, dpi = 300)
